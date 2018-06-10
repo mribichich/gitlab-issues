@@ -21,34 +21,40 @@ if ([GITLAB_USER_ID, GITLAB_API_TOKEN].some(s => !s)) {
 
 (async () => {
   const projects = [
-    {id: 'sis-access-api', group: 'sis', setup: true, package: false, scripts: true},
-    {id: 'sis-access-service', group: 'sis', setup: true, package: false, scripts: true},
-    {id: 'sis-access-web', group: 'sis', setup: true, package: false, scripts: true},
-    {id: 'sis-alerting-api', group: 'sis', setup: true, package: false, scripts: true},
-    {id: 'sis-alerting-service', group: 'sis', setup: true, package: false, scripts: true},
-    {id: 'sis-authorizer-service', group: 'sis', setup: true, package: true, scripts: true},
-    {id: 'sis-comm-service', group: 'sis', setup: true, package: true, scripts: true},
-    {id: 'sis-controlpanel-api', group: 'sis', setup: true, package: false, scripts: true},
-    {id: 'sis-controlpanel-web', group: 'sis', setup: true, package: false, scripts: true},
-    {id: 'sis-modbus-service', group: 'sis', setup: true, package: true, scripts: true},
-    {id: 'sis-presentismo-api', group: 'sis', setup: true, package: true, scripts: true},
-    {id: 'sis-presentismo-service', group: 'sis', setup: true, package: true, scripts: true},
-    {id: 'sis-presentismo-web', group: 'sis', setup: true, package: false, scripts: true},
-    {id: 'sis-rtu-simulator', group: 'sis', setup: true, package: true, scripts: true},
-    {id: 'sis-telemetry-api', group: 'sis', setup: true, package: true, scripts: true},
-    {id: 'sis-telemetry-service', group: 'sis', setup: true, package: true, scripts: true},
-    {id: 'sis-telemetry-web', group: 'sis', setup: true, package: false, scripts: true},
-    {id: 'sis-visits-api', group: 'sis', setup: true, package: true, scripts: true},
-    {id: 'sis-visits-web', group: 'sis', setup: true, package: false, scripts: true},
-    {id: 'sis-zkaccessscrapper-service', group: 'sis', setup: true, package: false, scripts: true},
+    {group: 'sis', name: 'sis-access-api', setup: false, package: false, scripts: false},
+    {group: 'sis', name: 'sis-access-service', setup: false, package: false, scripts: false},
+    {group: 'sis', name: 'sis-access-web', setup: false, package: false, scripts: false},
+    {group: 'sis', name: 'sis-alerting-api', setup: false, package: false, scripts: false},
+    {group: 'sis', name: 'sis-alerting-service', setup: false, package: false, scripts: false},
+    {group: 'sis', name: 'sis-authorizer-service', setup: true, package: false, scripts: true},
+    {group: 'sis', name: 'sis-comm-service', setup: true, package: true, scripts: true},
+    {group: 'sis', name: 'sis-controlpanel-api', setup: true, package: false, scripts: true},
+    {group: 'sis', name: 'sis-controlpanel-web', setup: true, package: false, scripts: true},
+    {group: 'sis', name: 'sis-modbus-service', setup: true, package: true, scripts: true},
+    {group: 'sis', name: 'sis-presentismo-api', setup: true, package: true, scripts: true},
+    {group: 'sis', name: 'sis-presentismo-service', setup: true, package: true, scripts: true},
+    {group: 'sis', name: 'sis-presentismo-web', setup: true, package: false, scripts: true},
+    {group: 'sis', name: 'sis-rtu-simulator', setup: true, package: true, scripts: true},
+    {group: 'sis', name: 'sis-telemetry-api', setup: true, package: true, scripts: true},
+    {group: 'sis', name: 'sis-telemetry-service', setup: true, package: true, scripts: true},
+    {group: 'sis', name: 'sis-telemetry-web', setup: true, package: false, scripts: true},
+    {group: 'sis', name: 'sis-visits-api', setup: true, package: true, scripts: true},
+    {group: 'sis', name: 'sis-visits-web', setup: true, package: false, scripts: true},
+    {group: 'sis', name: 'sis-zkaccessscrapper-service', setup: true, package: false, scripts: true},
   ];
+
+  const instance = axios.create({
+    baseURL: `${GITLAB_API_URL}/projects/`,
+    timeout: 30000,
+    headers: {'PRIVATE-TOKEN': GITLAB_API_TOKEN},
+  });
 
   await asyncForEach(projects, async project => {
     try {
-      const projectId = `${project.group}%2F${project.id}`;
-      const issuesUrl = `${GITLAB_API_URL}/projects/${projectId}/issues`;
+      const projectId = `${project.group}%2F${project.name}`;
+      const issuesUrl = `${projectId}/issues`;
 
-      log(`${project.id}:  `);
+      log(`${project.name}:  `);
 
       if (project.package) {
         log(`  package `);
@@ -59,13 +65,9 @@ if ([GITLAB_USER_ID, GITLAB_API_TOKEN].some(s => !s)) {
           labels: 'type: chore',
         };
 
-        await axios.post(issuesUrl, data, {
-          headers: {'PRIVATE-TOKEN': GITLAB_API_TOKEN},
-        });
+        await instance.post(issuesUrl, data);
 
         log(`✔️  `);
-
-        process.exit(0);
       }
 
       if (project.setup) {
@@ -77,9 +79,7 @@ if ([GITLAB_USER_ID, GITLAB_API_TOKEN].some(s => !s)) {
           labels: 'type: chore',
         };
 
-        await axios.post(issuesUrl, data, {
-          headers: {'PRIVATE-TOKEN': GITLAB_API_TOKEN},
-        });
+        await instance.post(issuesUrl, data);
 
         log(`✔️  `);
       }
@@ -93,9 +93,7 @@ if ([GITLAB_USER_ID, GITLAB_API_TOKEN].some(s => !s)) {
           labels: 'type: chore',
         };
 
-        await axios.post(issuesUrl, data, {
-          headers: {'PRIVATE-TOKEN': GITLAB_API_TOKEN},
-        });
+        await instance.post(issuesUrl, data);
 
         log(`✔️  `);
       }
