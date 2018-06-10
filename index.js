@@ -8,13 +8,7 @@
 
 const axios = require('axios');
 
-async function asyncForEach(array, callback) {
-  for (let index = 0; index < array.length; index++) {
-    await callback(array[index], index, array);
-  }
-}
-
-async;
+const {asyncForEach, logLine, log} = require('./utils');
 
 const GITLAB_URL = 'https://gitlab.tss.com.ar';
 const GITLAB_API_URL = `${GITLAB_URL}/api/v4`;
@@ -54,9 +48,11 @@ if ([GITLAB_USER_ID, GITLAB_API_TOKEN].some(s => !s)) {
       const projectId = `${project.group}%2F${project.id}`;
       const issuesUrl = `${GITLAB_API_URL}/projects/${projectId}/issues`;
 
-      process.stdout.write();
+      log(`${project.id}:  `);
 
       if (project.package) {
+        log(`  package `);
+
         const data = {
           title: 'Migración de package.config a PackageReference',
           assignee_ids: [GITLAB_USER_ID],
@@ -67,40 +63,46 @@ if ([GITLAB_USER_ID, GITLAB_API_TOKEN].some(s => !s)) {
           headers: {'PRIVATE-TOKEN': GITLAB_API_TOKEN},
         });
 
-        console.log(`${project.id}: package ✔️`);
+        log(`✔️  `);
 
         process.exit(0);
       }
 
       if (project.setup) {
+        log(`  setup `);
+
         const data = {
           title: 'Arreglo del archivo de log en el setup',
           assignee_ids: [GITLAB_USER_ID],
           labels: 'type: chore',
         };
 
-        // await axios.post(issuesUrl, data, {
-        //   headers: {'PRIVATE-TOKEN': GITLAB_API_TOKEN}
-        // });
+        await axios.post(issuesUrl, data, {
+          headers: {'PRIVATE-TOKEN': GITLAB_API_TOKEN},
+        });
 
-        console.log(`${project.id}: setup ✔️`);
+        log(`✔️  `);
       }
 
       if (project.scripts) {
+        log(`  scripts `);
+
         const data = {
           title: 'Arreglo de los scripts de release',
           assignee_ids: [GITLAB_USER_ID],
           labels: 'type: chore',
         };
 
-        // await axios.post(issuesUrl, data, {
-        //   headers: {'PRIVATE-TOKEN': GITLAB_API_TOKEN}
-        // });
+        await axios.post(issuesUrl, data, {
+          headers: {'PRIVATE-TOKEN': GITLAB_API_TOKEN},
+        });
 
-        console.log(`${project.id}: scripts ✔️`);
+        log(`✔️  `);
       }
+
+      logLine();
     } catch (err) {
-      console.log('err: ', err);
+      console.error('err: ', err);
 
       process.exit(1);
     }
